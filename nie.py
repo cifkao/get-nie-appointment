@@ -1,9 +1,11 @@
+import selenium.common.exceptions
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 import sys
+import time
 
 driver = webdriver.Firefox()
 
@@ -16,21 +18,24 @@ def scroll():
 #click button after scrolling to bottom of page
 def click_button(btnid):
     scroll()
-    driver.find_element_by_id(btnid).click()
+    driver.find_element(By.ID, btnid).click()
 
 #select option from a drop down menu
 def select_option(menu_id, option):
-    select = Select(driver.find_element_by_id(menu_id))
+    element = driver.find_element(By.ID, menu_id)
+    # driver.execute_script("arguments[0].scrollIntoView(false);", element)
+    select = Select(element)
     select.select_by_visible_text(option)
 
 #fill a text field
 def fill_field(fld_id, text):
-    field = driver.find_element_by_id(fld_id)
+    field = driver.find_element(By.ID, fld_id)
     field.send_keys(text)
 
 #open the nie website
 def start():
-    driver.get("https://sede.administracionespublicas.gob.es/icpplustieb/index/")
+    driver.get("https://icp.administracionelectronica.gob.es/icpplustieb/index")
+    driver.find_element(By.ID, "cookie_action_close_header").click()
 
 #fill in and continue on the select city page
 def go_to_city_page(city):
@@ -50,10 +55,17 @@ def go_to_conditions_page():
 
 #input basic info to ask for appointment
 def go_to_info_page(nie, name, country, expiry):
+    driver.find_element(By.ID, "rdbTipoDocPas").click()
     fill_field("txtIdCitado", passport)
     fill_field("txtDesCitado", name)
-    select_option("txtPaisNac", country)
-    fill_field("txtAnnoCitado", expiry)
+    try:
+        select_option("txtPaisNac", country)
+    except selenium.common.exceptions.NoSuchElementException:
+        pass
+    try:
+        fill_field("txtAnnoCitado", expiry)
+    except selenium.common.exceptions.NoSuchElementException:
+        pass
     click_button("btnEnviar")
 
 #ask for an appointment
@@ -63,7 +75,7 @@ def require_appointment():
 #Select second office because it could return a single preselcted office or multiple where you have to make a choice
 def go_to_office_page():
     try:
-        driver.find_element_by_id("idSede").send_keys(Keys.DOWN)
+        driver.find_element(By.ID, "idSede").send_keys(Keys.DOWN)
     except:
         pass
     click_button("btnSiguiente")
@@ -116,6 +128,7 @@ try:
                 click_button("btnSubmit")
         except:
             no_appointment()
+        time.sleep(1234)
 except KeyboardInterrupt:
     wait(100)
 
