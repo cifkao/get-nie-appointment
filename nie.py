@@ -140,7 +140,7 @@ try:
         try:
             go_to_office_page()
             add_info_compl(tel, email)
-            if "No hay citas" not in driver.page_source:
+            if "no hay citas" not in driver.page_source.lower():
                 push_message("NIE appointment found!", "Appointment found")
                 break
             else:
