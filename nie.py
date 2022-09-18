@@ -4,8 +4,12 @@ from selenium.webdriver.support.ui import Select, WebDriverWait
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
+from datetime import datetime
+import os
+import requests
 import sys
 import time
+import traceback
 
 driver = webdriver.Firefox()
 
@@ -80,6 +84,16 @@ def go_to_office_page():
         pass
     click_button("btnSiguiente")
 
+def push_message(title, body):
+    print(requests.post(
+        "https://api.pushbullet.com/v2/pushes",
+        data={
+            "type": "note", "title": title,
+            "body": "(" + datetime.now().strftime("%d-%m-%Y %H:%M:%S") + ") " + body
+        },
+        headers={"Access-Token": os.environ["PUSHBULLET_API_KEY"]}
+    ).json())
+
 #if there are no offices to choose from, exit
 def no_appointment():
     click_button("btnSalir")
@@ -114,21 +128,27 @@ try:
     
     while True:
         go_to_city_page(city)
+        time.sleep(1)
         go_to_appointment_page(appointmentType)
+        time.sleep(1)
         go_to_conditions_page()
+        time.sleep(1)
         go_to_info_page(passport, name, country, birthyear)
+        time.sleep(1)
         require_appointment()
+        time.sleep(1)
         try:
             go_to_office_page()
             add_info_compl(tel, email)
-            if not driver.getPageSource().contains("No hay citas"):
-                wait(1000)
+            if "No hay citas" not in driver.page_source:
+                push_message("NIE appointment found!", "Appointment found")
                 break
             else:
                 click_button("btnSubmit")
         except:
+            traceback.print_exc()
             no_appointment()
-        time.sleep(1234)
+        time.sleep(100)
 except KeyboardInterrupt:
     wait(100)
 
