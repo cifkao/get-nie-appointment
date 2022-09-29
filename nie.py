@@ -49,7 +49,7 @@ def go_to_city_page(city):
 #choose the correct type of appointment for NIE page
 def go_to_appointment_page(appointmentType):
     scroll()
-    select_option("tramiteGrupo[0]", appointmentType)
+    select_option("tramiteGrupo[1]", appointmentType)
     click_button("btnAceptar")
 #could make this better
 
@@ -142,13 +142,13 @@ try:
             add_info_compl(tel, email)
             if "no hay citas" not in driver.page_source.lower():
                 push_message("NIE appointment found!", "Appointment found")
-                break
+                break   
             else:
                 click_button("btnSubmit")
         except:
             traceback.print_exc()
             no_appointment()
-        time.sleep(100)
+        time.sleep(200)
 except KeyboardInterrupt:
     wait(100)
 
